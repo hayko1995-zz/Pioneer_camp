@@ -1,5 +1,6 @@
 package scoj.pioneer_camp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -12,9 +13,17 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 public class Main extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    String erg;
+    Intent intent = null, chooser;
+    String room_number = "0";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +31,18 @@ public class Main extends AppCompatActivity
         setContentView(R.layout.main_activity);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //code starts
 
+        WebView webView = findViewById(R.id.webview);
+        webView.setWebViewClient(new WebViewClient());
+        //webView.loadUrl("http://Google.com");
+        webView.loadUrl("file:///android_res/raw/index.html");
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webView.getSettings().setSupportZoom(true);
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setDisplayZoomControls(true);
+        //ends
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,7 +101,10 @@ public class Main extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            // Handle the camera action
+            intent = new Intent(this, LoginActivity.class);
+            intent.putExtra("erg", erg);
+            startActivityForResult(intent, 1);
+
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
@@ -98,4 +121,14 @@ public class Main extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (data == null) {
+            return;
+        }
+        room_number = data.getStringExtra("number"); // poxelu
+        Toast.makeText(getApplicationContext(), room_number, Toast.LENGTH_LONG).show();
+
+    } ///  insert servise parametrs
 }
