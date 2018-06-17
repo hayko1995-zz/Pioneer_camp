@@ -128,7 +128,7 @@ public class Main extends AppCompatActivity
             return;
         }
         room_number = data.getStringExtra("number"); // poxelu
-        Toast.makeText(getApplicationContext(), room_number, Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), room_number.toString(), Toast.LENGTH_LONG).show();
 
     } ///  insert servise parametrs
 }
