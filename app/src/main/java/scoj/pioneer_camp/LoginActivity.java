@@ -32,14 +32,13 @@ public class LoginActivity extends Activity {
         mEmailSignInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), mPasswordView.getText().toString(), Toast.LENGTH_LONG).show();
                 if (mPasswordView.getText().toString().equalsIgnoreCase("123455")) {
                     Intent intent = new Intent(LoginActivity.this, Main.class);
                     intent.putExtra("number", room_numberm.getText().toString());
+                    intent.putExtra("pass", mPasswordView.getText().toString());
                     setResult(RESULT_OK, intent);
                     finish();
                 } else {
-                    //intent.putExtra("size", newprogress);
                     Toast.makeText(getApplicationContext(), "Please Write correct Password", Toast.LENGTH_LONG).show();
                 }
             }
@@ -50,7 +49,6 @@ public class LoginActivity extends Activity {
     @Override
     public void onBackPressed() {
         Intent intent = new Intent(this, Main.class);
-        intent.putExtra("number", newprogress);
         setResult(RESULT_CANCELED, intent);
         finish();
     }

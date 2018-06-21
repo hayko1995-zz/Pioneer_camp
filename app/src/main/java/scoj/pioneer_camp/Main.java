@@ -16,14 +16,14 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 public class Main extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     String erg;
-    Intent intent = null, chooser;
-    String room_number = "0";
+    Intent intent;
+    String room_number;
+    String pass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,8 +127,11 @@ public class Main extends AppCompatActivity
         if (data == null) {
             return;
         }
-        room_number = data.getStringExtra("number"); // poxelu
-        Toast.makeText(getApplicationContext(), room_number.toString(), Toast.LENGTH_LONG).show();
+        room_number = data.getStringExtra("number");
+        pass = data.getStringExtra("pass");
+        //Intent startIntent = new Intent(Main.this, MyService.class);
+        // startService(startIntent);
+        startService(new Intent(Main.this, MyService.class));
 
     } ///  insert servise parametrs
 }
