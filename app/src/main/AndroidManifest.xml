@@ -35,6 +35,7 @@
             android:name=".MyService"
             android:enabled="true"
             android:exported="true"></service>
+
         <receiver android:name=".Startup">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

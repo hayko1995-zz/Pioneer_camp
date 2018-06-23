@@ -11,7 +11,5 @@ public class Startup extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         context.startService(new Intent(context, MyService.class));
-
-
     }
 }

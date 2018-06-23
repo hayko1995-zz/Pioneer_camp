@@ -33,6 +33,7 @@ public class Main extends AppCompatActivity
         setSupportActionBar(toolbar);
         //code starts
 
+
         WebView webView = findViewById(R.id.webview);
         webView.setWebViewClient(new WebViewClient());
         //webView.loadUrl("http://Google.com");
