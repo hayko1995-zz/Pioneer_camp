@@ -12,11 +12,15 @@ public class MyService extends Service {
     public MyService() {
     }
 
+
     @Override
     public void onCreate() {
         super.onCreate();
 
+
         Toast.makeText(getApplicationContext(), "sa", Toast.LENGTH_LONG).show();
+        int NOTIFICATION_ID = 234;
+
         Intent intent = new Intent(this, Main.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
