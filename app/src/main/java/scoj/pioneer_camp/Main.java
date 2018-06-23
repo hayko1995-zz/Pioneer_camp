@@ -53,6 +53,7 @@ public class Main extends AppCompatActivity
             }
         });
 
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -132,7 +133,10 @@ public class Main extends AppCompatActivity
         pass = data.getStringExtra("pass");
         //Intent startIntent = new Intent(Main.this, MyService.class);
         // startService(startIntent);
+
+
         startService(new Intent(Main.this, MyService.class));
+
 
     } ///  insert servise parametrs
 }
