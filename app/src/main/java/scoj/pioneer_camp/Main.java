@@ -1,6 +1,7 @@
 package scoj.pioneer_camp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -24,6 +25,7 @@ public class Main extends AppCompatActivity
     Intent intent;
     String room_number;
     String pass;
+    String saved_room_number_str = "saved_room_number";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,8 +137,21 @@ public class Main extends AppCompatActivity
         // startService(startIntent);
 
 
+        SharedPreferences.Editor editor = getSharedPreferences(saved_room_number_str, MODE_PRIVATE).edit();
+        editor.putInt("room_number", Integer.parseInt(room_number));
+        editor.apply();
         startService(new Intent(Main.this, MyService.class));
 
 
     } ///  insert servise parametrs
+    /*private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+*/    //todo isMyServiceRunning(MyService.class);
 }

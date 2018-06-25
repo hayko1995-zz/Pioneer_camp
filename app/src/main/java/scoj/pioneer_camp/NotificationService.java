@@ -9,7 +9,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.util.Log;
 
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 
@@ -34,8 +33,8 @@ public class NotificationService extends IntentService {
         Notification.Builder builder = new Notification.Builder(context);
 
         Notification notification = builder.setContentTitle("Demo App Notification")
-                .setContentText("New Notification From Demo App..")
-                .setTicker("New Message Alert!")
+                .setContentText(String.valueOf(number))
+                .setTicker(String.valueOf(number))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(pendingIntent).build();
 
@@ -48,7 +47,7 @@ public class NotificationService extends IntentService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "NotificationDemo",
+                    exampleString,
                     IMPORTANCE_DEFAULT
             );
             notificationManager.createNotificationChannel(channel);
@@ -61,7 +60,7 @@ public class NotificationService extends IntentService {
     protected void onHandleIntent(Intent intent) {
 
 
-        Log.i("notify", "serverstart");
+        Integer room_number = intent.getIntExtra("number", 0);
         notify(this, "hello", 5);
     }
 
