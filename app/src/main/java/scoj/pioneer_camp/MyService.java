@@ -18,8 +18,7 @@ public class MyService extends Service {
     public void onCreate() {
 
         super.onCreate();
-
-        MyNotification.notify(this, "aa", 5);
+        startService(new Intent(this, NotificationService.class));
     }
 
 

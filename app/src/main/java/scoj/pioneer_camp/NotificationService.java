@@ -1,6 +1,7 @@
 package scoj.pioneer_camp;
 
-import android.app.AlarmManager;
+import android.annotation.TargetApi;
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,39 +9,24 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
-
-import java.util.Calendar;
+import android.util.Log;
 
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 
-/**
- * Helper class for showing and canceling new message
- * notifications.
- * <p>
- * This class makes heavy use of the {@link NotificationCompat.Builder} helper
- * class to create notifications in a backward-compatible way.
- */
-public class MyNotification {
+
+public class NotificationService extends IntentService {
+
 
     private static final String CHANNEL_ID = "com.singhajit.notificationDemo.channelId";
-
     private static final String NOTIFICATION_TAG = "NewMessage";
 
+    public NotificationService() {
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    public static void notify(final Context context,
-                              final String exampleString, final int number) {
+        super("NotificationService");
+    }
 
-
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent notificationIntent = new Intent(context, MyService.class);
-        PendingIntent broadcast = PendingIntent.getService(context, 100, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.SECOND, 5);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), broadcast);
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    public static void notify(final Context context, final String exampleString, final int number) {
 
         Intent intent = new Intent(context, Main.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
@@ -70,4 +56,18 @@ public class MyNotification {
 
         notificationManager.notify(0, notification);
     }
+
+    @Override
+    protected void onHandleIntent(Intent intent) {
+
+
+        Log.i("notify", "serverstart");
+        notify(this, "hello", 5);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
 }
+
