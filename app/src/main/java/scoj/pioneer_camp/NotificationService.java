@@ -34,6 +34,7 @@ public class NotificationService extends IntentService {
 
         Notification notification = builder.setContentTitle("Demo App Notification")
                 .setContentText(String.valueOf(number))
+                .setContentTitle(exampleString)
                 .setTicker(String.valueOf(number))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(pendingIntent).build();
