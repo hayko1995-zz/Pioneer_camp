@@ -38,8 +38,8 @@ public class Main extends AppCompatActivity
 
         WebView webView = findViewById(R.id.webview);
         webView.setWebViewClient(new WebViewClient());
-        //webView.loadUrl("http://Google.com");
-        webView.loadUrl("file:///android_res/raw/index.html");
+        webView.loadUrl("http://192.168.0.106:3000/");
+        //webView.loadUrl("file:///android_res/raw/index.html");
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webView.getSettings().setSupportZoom(true);
@@ -114,10 +114,6 @@ public class Main extends AppCompatActivity
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
 
         }
 
