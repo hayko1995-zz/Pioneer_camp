@@ -3,15 +3,31 @@ package scoj.pioneer_camp;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
+import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Calendar;
+import java.util.Iterator;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MyService extends Service {
     public MyService() {
@@ -20,6 +36,9 @@ public class MyService extends Service {
     String saved_room_number_str = "saved_room_number";
 
     Integer room_number;
+    String geted_data;
+
+    private ProgressDialog progress;
 
 
 
@@ -28,7 +47,6 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -36,6 +54,8 @@ public class MyService extends Service {
     public int onStartCommand(Intent arg, int flags, int startId) {
 
         Log.i("aa", "start ");
+        new SendRequest().execute();
+
         SharedPreferences prefs = getSharedPreferences(saved_room_number_str, MODE_PRIVATE);
 
         room_number = prefs.getInt("room_number", 0);
@@ -94,4 +114,101 @@ public class MyService extends Service {
     public void onDestroy() {
         super.onDestroy();
     }
+
+    public String getPostDataString(JSONObject params) throws Exception {
+
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+
+        Iterator<String> itr = params.keys();
+
+        while (itr.hasNext()) {
+
+            String key = itr.next();
+            Object value = params.get(key);
+
+            if (first)
+                first = false;
+            else
+                result.append("&");
+
+            result.append(URLEncoder.encode(key, "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
+
+        }
+        return result.toString();
+    } //post
+
+    public class SendRequest extends AsyncTask<String, Void, String> {
+
+        protected void onPreExecute() {
+        }
+
+
+        protected String doInBackground(String... arg0) {
+
+            try {
+
+                URL url = new URL("http://192.168.0.102:3000/get_json");
+
+                JSONObject postDataParams = new JSONObject();
+
+
+                postDataParams.put("room", room_number);
+
+
+                //Log.e("params",postDataParams.toString());
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000 /* milliseconds */);
+                conn.setConnectTimeout(15000 /* milliseconds */);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(getPostDataString(postDataParams));
+
+                writer.flush();
+                writer.close();
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuffer sb = new StringBuffer("");
+                    String line = "";
+
+                    while ((line = in.readLine()) != null) {
+
+                        sb.append(line);
+                        break;
+                    }
+
+                    in.close();
+                    //geted_data = sb.toString();
+                    //return sb.toString();
+                    return new String(sb);
+                } else {
+                    return new String("false : " + responseCode);
+                }
+            } catch (Exception e) {
+                return new String("Exception: " + e.getMessage());
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(getApplicationContext(), result,
+                    Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), result,
+                    Toast.LENGTH_LONG).show();
+        }
+    } // post
+
 }
