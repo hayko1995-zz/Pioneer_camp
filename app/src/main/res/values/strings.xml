@@ -7,7 +7,7 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_login">Sign in</string>
-    <string name="url">http://localhost:3000/get_json</string>
+    <string name="url">http://192.168.0.102:3000/get_json</string>
 
 
     <!-- Strings related to login -->

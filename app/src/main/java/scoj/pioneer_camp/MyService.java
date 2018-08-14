@@ -3,10 +3,12 @@ package scoj.pioneer_camp;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.IBinder;
@@ -33,14 +35,13 @@ public class MyService extends Service {
     public MyService() {
     }
 
+
     String saved_room_number_str = "saved_room_number";
 
     Integer room_number;
-    String geted_data;
-
-    private ProgressDialog progress;
-
-
+    StringBuffer geted_data;
+    JSONObject jObject;
+    String game, time, dt;
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -49,11 +50,28 @@ public class MyService extends Service {
         super.onCreate();
     }
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    } // inet conection chack
+
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     public int onStartCommand(Intent arg, int flags, int startId) {
 
-        Log.i("aa", "start ");
+
+        Log.i("aa", "Service starting ");
+
+        if (isNetworkAvailable() == true) {
+            Toast.makeText(getApplicationContext(), "inet on",
+                    Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getApplicationContext(), "inet off",
+                    Toast.LENGTH_LONG).show();
+        }
+
         new SendRequest().execute();
 
         SharedPreferences prefs = getSharedPreferences(saved_room_number_str, MODE_PRIVATE);
@@ -97,6 +115,7 @@ public class MyService extends Service {
                 1000 * 60 * 5, alarmIntent);
         Log.i("aa", "start ");
 
+
         //alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), AlarmManager.INTERVAL_DAY, broadcast);
 
         //startForeground(0,null);
@@ -114,6 +133,7 @@ public class MyService extends Service {
     public void onDestroy() {
         super.onDestroy();
     }
+
 
     public String getPostDataString(JSONObject params) throws Exception {
 
@@ -144,20 +164,11 @@ public class MyService extends Service {
 
         protected void onPreExecute() {
         }
-
-
         protected String doInBackground(String... arg0) {
-
             try {
-
                 URL url = new URL("http://192.168.0.102:3000/get_json");
-
                 JSONObject postDataParams = new JSONObject();
-
-
                 postDataParams.put("room", room_number);
-
-
                 //Log.e("params",postDataParams.toString());
 
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -189,11 +200,14 @@ public class MyService extends Service {
                         sb.append(line);
                         break;
                     }
-
                     in.close();
-                    //geted_data = sb.toString();
-                    //return sb.toString();
-                    return new String(sb);
+                    jObject = new JSONObject(sb.toString());
+                    game = jObject.optString("game", "");
+                    time = jObject.optString("time", "");
+                    dt = jObject.optString("dt", ""); // to do
+
+                    //jObject = new JSONObject(sb.toString());
+                    return sb.toString();
                 } else {
                     return new String("false : " + responseCode);
                 }
@@ -202,13 +216,20 @@ public class MyService extends Service {
             }
         }
 
+        /*
+                public Bread fromJson(final JSONObject object) {
+                    final String image = object.optString("object", "");
+                    final int price= object.optInt("price", 0);
+                    final int weight= object.optInt("weight", 0);
+                    final int kkal= object.optInt("kkal", 0);
+                    final String description= object.optString("description", "");
+                    return new Bread(image,price,weight,kkal,description);
+                }
+        */
         @Override
         protected void onPostExecute(String result) {
             Toast.makeText(getApplicationContext(), result,
                     Toast.LENGTH_LONG).show();
-            Toast.makeText(getApplicationContext(), result,
-                    Toast.LENGTH_LONG).show();
         }
     } // post
-
 }
