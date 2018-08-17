@@ -75,7 +75,7 @@ public class NotificationService extends IntentService {
         SharedPreferences.Editor editor = getSharedPreferences(saved_room_number_str, MODE_PRIVATE).edit();
         editor.putInt("room_number", room_number);
         editor.apply();
-        Log.i("aaa", String.valueOf(room_number));
+        Log.i("server", "notify");
         notify(this, "hello", room_number);
 
 

@@ -32,6 +32,10 @@ import java.util.Iterator;
 import javax.net.ssl.HttpsURLConnection;
 
 public class MyService extends Service {
+    int i = 0;
+    String lesttime;
+
+
     public MyService() {
     }
 
@@ -39,9 +43,29 @@ public class MyService extends Service {
     String saved_room_number_str = "saved_room_number";
 
     Integer room_number;
-    StringBuffer geted_data;
     JSONObject jObject;
     String game, time, dt;
+
+    private void SetAlarm(int min) {
+        Log.i("server", "set");
+        AlarmManager alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
+        i++;
+
+        Calendar cal = Calendar.getInstance();
+        //cal.add(Calendar.MINUTE, sec);
+        cal.set(Calendar.HOUR_OF_DAY, 21);
+        cal.set(Calendar.MINUTE, min);
+        cal.set(Calendar.SECOND, 0);
+
+        long time = cal.getTimeInMillis();
+        Intent notificationIntent = new Intent(this, NotificationService.class);
+        notificationIntent.putExtra("roomNumber", room_number);
+        PendingIntent alarmIntent = PendingIntent.getService(this, i, notificationIntent, 0);
+        alarmMgr.set(AlarmManager.RTC_WAKEUP, time, alarmIntent);
+
+
+    }
+
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -62,11 +86,14 @@ public class MyService extends Service {
     public int onStartCommand(Intent arg, int flags, int startId) {
 
 
-        Log.i("aa", "Service starting ");
+        Log.i("service", "Service starting ");
 
         if (isNetworkAvailable() == true) {
             Toast.makeText(getApplicationContext(), "inet on",
                     Toast.LENGTH_LONG).show();
+            SetAlarm(15);
+            SetAlarm(17);
+
         } else {
             Toast.makeText(getApplicationContext(), "inet off",
                     Toast.LENGTH_LONG).show();
@@ -77,8 +104,8 @@ public class MyService extends Service {
         SharedPreferences prefs = getSharedPreferences(saved_room_number_str, MODE_PRIVATE);
 
         room_number = prefs.getInt("room_number", 0);
-        Intent intent = new Intent(this, NotificationService.class);
-        intent.putExtra("roomNumber", room_number);
+        //Intent intent = new Intent(this, NotificationService.class);
+
 
         /*
          AlarmManager mgrAlarm = (AlarmManager) context.getSystemService(ALARM_SERVICE);
@@ -99,21 +126,17 @@ public class MyService extends Service {
         * */
 
         //AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        AlarmManager alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
-        Intent notificationIntent = new Intent(this, NotificationService.class);
-        PendingIntent alarmIntent = PendingIntent.getService(this, 0, notificationIntent, 0);
 
 
-        Calendar calendar = Calendar.getInstance();
+        //Calendar calendar = Calendar.getInstance();
+        //calendar.setTimeInMillis(System.currentTimeMillis());
+        //calendar.set(Calendar.HOUR_OF_DAY, 15);
+        //calendar.set(Calendar.MINUTE, 45);
 
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, 15);
-        calendar.set(Calendar.MINUTE, 45);
 
-
-        alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
-                1000 * 60 * 5, alarmIntent);
+        // alarmMgr.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),alarmIntent);
         Log.i("aa", "start ");
+
 
 
         //alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), AlarmManager.INTERVAL_DAY, broadcast);
@@ -166,7 +189,7 @@ public class MyService extends Service {
         }
         protected String doInBackground(String... arg0) {
             try {
-                URL url = new URL("http://192.168.0.102:3000/get_json");
+                URL url = new URL("http://192.168.0.103:3000/get_json");
                 JSONObject postDataParams = new JSONObject();
                 postDataParams.put("room", room_number);
                 //Log.e("params",postDataParams.toString());
@@ -202,9 +225,12 @@ public class MyService extends Service {
                     }
                     in.close();
                     jObject = new JSONObject(sb.toString());
+                    String room = jObject.optString("room", "");
                     game = jObject.optString("game", "");
                     time = jObject.optString("time", "");
-                    dt = jObject.optString("dt", ""); // to do
+                    lesttime = jObject.optString("lesttime", "");
+
+                    // to do
 
                     //jObject = new JSONObject(sb.toString());
                     return sb.toString();
