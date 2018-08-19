@@ -39,7 +39,7 @@ public class MyService extends Service {
     String saved_room_number_str = "saved_room_number";
     Integer room_number;
     JSONObject jObject;
-    private final static int INTERVAL = 1000 * 10; //10 sec
+    long INTERVAL = 1000 * 10; //10 sec
     String game, time;
     String post_request;
     StringBuffer sb = new StringBuffer("");
@@ -62,8 +62,6 @@ public class MyService extends Service {
         repeat_state = true;
         mHandlerTask.run();
     }
-
-// schedule the task to run starting now and then every hour...
 
     void stopRepeatingTask() {
         repeat_state = false;
@@ -136,25 +134,34 @@ public class MyService extends Service {
                     jObject = new JSONObject(post_request);
                 } catch (JSONException e) {
                     Toast.makeText(getApplicationContext(), "post data eror", Toast.LENGTH_LONG).show();
-                    if (repeat_state == false) startRepeatingTask();
+                    INTERVAL = 1000 * 10; // 10 sec
+                    // if (repeat_state == false) startRepeatingTask();
                 }
+
                 String room = jObject.optString("room", "");
                 game = jObject.optString("game", "");
                 time = jObject.optString("time", "");
                 lesttime = jObject.optString("lesttime", "");  // TODO: get data and for each data for make notifications
                 SetAlarm(15); // ToDO: need to change whit for_each
                 SetAlarm(17);// ToDO: need to change
+                Calendar cc = Calendar.getInstance();
+
+                cc.set(Calendar.DAY_OF_MONTH, Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + 1);
+                cc.set(Calendar.HOUR_OF_DAY, 9);
+                cc.set(Calendar.MINUTE, 30);
+                cc.set(Calendar.SECOND, 0);
+                INTERVAL = cc.getTimeInMillis();
 
             } else
-                Toast.makeText(getApplicationContext(), "post data eror", Toast.LENGTH_LONG).show();
-
+                Toast.makeText(getApplicationContext(), "post data eror 1", Toast.LENGTH_LONG).show();
+            INTERVAL = 1000 * 10; // 10 sec
 
         } else {
 
 
             Toast.makeText(getApplicationContext(), "inet off",
                     Toast.LENGTH_LONG).show();  // TODO: make chake internet connection every hour
-            if (repeat_state == false) startRepeatingTask();
+            // if (repeat_state == false) startRepeatingTask();
         }
 
     }
@@ -171,6 +178,7 @@ public class MyService extends Service {
     public int onStartCommand(Intent arg, int flags, int startId) {
         main_func();
         Log.i("service", "Service starting ");
+        if (repeat_state == false) startRepeatingTask();
         return super.onStartCommand(arg, flags, startId);
     }
 
@@ -198,8 +206,8 @@ public class MyService extends Service {
                 //Log.e("params",postDataParams.toString());
 
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000 /* milliseconds */);
-                conn.setConnectTimeout(15000 /* milliseconds */);
+                conn.setReadTimeout(2000 /* milliseconds */);
+                conn.setConnectTimeout(2000 /* milliseconds */);
                 conn.setRequestMethod("POST");
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
@@ -226,13 +234,14 @@ public class MyService extends Service {
                         break;
                     }
                     in.close();
+                    Thread.sleep(3000);
 
                     return sb.toString();
                 } else {
-                    return new String("false : " + responseCode);
+                    return null;
                 }
             } catch (Exception e) {
-                return new String("Exception: " + e.getMessage());
+                return null;
             }
         }
 
