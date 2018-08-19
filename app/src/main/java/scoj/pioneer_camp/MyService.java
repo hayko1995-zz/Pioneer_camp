@@ -11,11 +11,13 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -34,129 +36,39 @@ import javax.net.ssl.HttpsURLConnection;
 public class MyService extends Service {
     int i = 0;
     String lesttime;
+    String saved_room_number_str = "saved_room_number";
+    Integer room_number;
+    JSONObject jObject;
+    private final static int INTERVAL = 1000 * 10; //10 sec
+    String game, time;
+    String post_request;
+    StringBuffer sb = new StringBuffer("");
+    boolean repeat_state = false;
+    Handler mHandler = new Handler();
 
+    Runnable mHandlerTask = new Runnable() {
+        @Override
+        public void run() {
+            main_func();
+            // Toast.makeText(getApplicationContext(), "10 Sec", Toast.LENGTH_LONG).show();
+            mHandler.postDelayed(mHandlerTask, INTERVAL);
+        }
+    };
 
     public MyService() {
     }
 
-
-    String saved_room_number_str = "saved_room_number";
-
-    Integer room_number;
-    JSONObject jObject;
-    String game, time, dt;
-
-    private void SetAlarm(int min) {
-        Log.i("server", "set");
-        AlarmManager alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
-        i++;
-
-        Calendar cal = Calendar.getInstance();
-        //cal.add(Calendar.MINUTE, sec);
-        cal.set(Calendar.HOUR_OF_DAY, 21);
-        cal.set(Calendar.MINUTE, min);
-        cal.set(Calendar.SECOND, 0);
-
-        long time = cal.getTimeInMillis();
-        Intent notificationIntent = new Intent(this, NotificationService.class);
-        notificationIntent.putExtra("roomNumber", room_number);
-        PendingIntent alarmIntent = PendingIntent.getService(this, i, notificationIntent, 0);
-        alarmMgr.set(AlarmManager.RTC_WAKEUP, time, alarmIntent);
-
-
+    void startRepeatingTask() {
+        repeat_state = true;
+        mHandlerTask.run();
     }
 
+// schedule the task to run starting now and then every hour...
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    @Override
-    public void onCreate() {
-        super.onCreate();
+    void stopRepeatingTask() {
+        repeat_state = false;
+        mHandler.removeCallbacks(mHandlerTask);
     }
-
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-    } // inet conection chack
-
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    @Override
-    public int onStartCommand(Intent arg, int flags, int startId) {
-
-
-        Log.i("service", "Service starting ");
-
-        if (isNetworkAvailable() == true) {
-            Toast.makeText(getApplicationContext(), "inet on",
-                    Toast.LENGTH_LONG).show();
-            SetAlarm(15);
-            SetAlarm(17);
-
-        } else {
-            Toast.makeText(getApplicationContext(), "inet off",
-                    Toast.LENGTH_LONG).show();
-        }
-
-        new SendRequest().execute();
-
-        SharedPreferences prefs = getSharedPreferences(saved_room_number_str, MODE_PRIVATE);
-
-        room_number = prefs.getInt("room_number", 0);
-        //Intent intent = new Intent(this, NotificationService.class);
-
-
-        /*
-         AlarmManager mgrAlarm = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-         ArrayList<PendingIntent> intentArray = new ArrayList<PendingIntent>();
-
-        for(i = 0; i < 10; ++i)
-        {
-           Intent intent = new Intent(context, OnAlarmReceiver.class);
-           // Loop counter `i` is used as a `requestCode`
-           PendingIntent pendingIntent = PendingIntent.getBroadcast(context, i, intent, 0);
-           // Single alarms in 1, 2, ..., 10 minutes (in `i` minutes)
-           mgrAlarm.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                        SystemClock.elapsedRealtime() + 60000 * i,
-                        pendingIntent);
-
-           intentArray.add(pendingIntent);
-        }
-        * */
-
-        //AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-
-        //Calendar calendar = Calendar.getInstance();
-        //calendar.setTimeInMillis(System.currentTimeMillis());
-        //calendar.set(Calendar.HOUR_OF_DAY, 15);
-        //calendar.set(Calendar.MINUTE, 45);
-
-
-        // alarmMgr.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),alarmIntent);
-        Log.i("aa", "start ");
-
-
-
-        //alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), AlarmManager.INTERVAL_DAY, broadcast);
-
-        //startForeground(0,null);
-        return super.onStartCommand(arg, flags, startId);
-    }
-
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        return null;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
 
     public String getPostDataString(JSONObject params) throws Exception {
 
@@ -183,10 +95,101 @@ public class MyService extends Service {
         return result.toString();
     } //post
 
+    private void SetAlarm(int min) {
+        Log.i("server", "set");
+        AlarmManager alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
+        i++;
+
+        Calendar cal = Calendar.getInstance();
+        //cal.add(Calendar.MINUTE, sec);
+        cal.set(Calendar.HOUR_OF_DAY, 21);
+        cal.set(Calendar.MINUTE, min);
+        cal.set(Calendar.SECOND, 0);
+
+        long time = cal.getTimeInMillis();
+        Intent notificationIntent = new Intent(this, NotificationService.class);
+        notificationIntent.putExtra("roomNumber", room_number);
+        PendingIntent alarmIntent = PendingIntent.getService(this, i, notificationIntent, 0);
+        alarmMgr.set(AlarmManager.RTC_WAKEUP, time, alarmIntent);
+
+
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
+
+    void main_func() {
+        if (isNetworkAvailable() == true) {
+            if (repeat_state = true) stopRepeatingTask();
+            Toast.makeText(getApplicationContext(), "inet on", Toast.LENGTH_LONG).show();
+            //get room number
+            SharedPreferences prefs = getSharedPreferences(saved_room_number_str, MODE_PRIVATE);
+            room_number = prefs.getInt("room_number", 0);
+            //send post (room number) request
+            new SendRequest().execute();
+            if (post_request != null) {
+                try {
+                    jObject = new JSONObject(post_request);
+                } catch (JSONException e) {
+                    Toast.makeText(getApplicationContext(), "post data eror", Toast.LENGTH_LONG).show();
+                    if (repeat_state == false) startRepeatingTask();
+                }
+                String room = jObject.optString("room", "");
+                game = jObject.optString("game", "");
+                time = jObject.optString("time", "");
+                lesttime = jObject.optString("lesttime", "");  // TODO: get data and for each data for make notifications
+                SetAlarm(15); // ToDO: need to change whit for_each
+                SetAlarm(17);// ToDO: need to change
+
+            } else
+                Toast.makeText(getApplicationContext(), "post data eror", Toast.LENGTH_LONG).show();
+
+
+        } else {
+
+
+            Toast.makeText(getApplicationContext(), "inet off",
+                    Toast.LENGTH_LONG).show();  // TODO: make chake internet connection every hour
+            if (repeat_state == false) startRepeatingTask();
+        }
+
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    } // inet conection chack
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @Override
+    public int onStartCommand(Intent arg, int flags, int startId) {
+        main_func();
+        Log.i("service", "Service starting ");
+        return super.onStartCommand(arg, flags, startId);
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+
+        return null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
     public class SendRequest extends AsyncTask<String, Void, String> {
 
         protected void onPreExecute() {
         }
+
         protected String doInBackground(String... arg0) {
             try {
                 URL url = new URL("http://192.168.0.103:3000/get_json");
@@ -202,8 +205,7 @@ public class MyService extends Service {
                 conn.setDoOutput(true);
 
                 OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
                 writer.write(getPostDataString(postDataParams));
 
                 writer.flush();
@@ -224,15 +226,7 @@ public class MyService extends Service {
                         break;
                     }
                     in.close();
-                    jObject = new JSONObject(sb.toString());
-                    String room = jObject.optString("room", "");
-                    game = jObject.optString("game", "");
-                    time = jObject.optString("time", "");
-                    lesttime = jObject.optString("lesttime", "");
 
-                    // to do
-
-                    //jObject = new JSONObject(sb.toString());
                     return sb.toString();
                 } else {
                     return new String("false : " + responseCode);
@@ -242,20 +236,14 @@ public class MyService extends Service {
             }
         }
 
-        /*
-                public Bread fromJson(final JSONObject object) {
-                    final String image = object.optString("object", "");
-                    final int price= object.optInt("price", 0);
-                    final int weight= object.optInt("weight", 0);
-                    final int kkal= object.optInt("kkal", 0);
-                    final String description= object.optString("description", "");
-                    return new Bread(image,price,weight,kkal,description);
-                }
-        */
+
         @Override
         protected void onPostExecute(String result) {
             Toast.makeText(getApplicationContext(), result,
                     Toast.LENGTH_LONG).show();
+            post_request = result;
         }
     } // post
+
+
 }
