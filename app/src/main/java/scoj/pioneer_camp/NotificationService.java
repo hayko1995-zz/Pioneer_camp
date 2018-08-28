@@ -78,7 +78,6 @@ public class NotificationService extends IntentService {
         Log.i("server", "notify");
         notify(this, "hello", room_number);
 
-
     }
 
     @Override
